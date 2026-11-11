@@ -1,0 +1,42 @@
+// !$*UTF8*$!
+{
+ archiveVersion = 1;
+ objectVersion = 77;
+ objects = {
+  A00000000000000000000001 = {
+   isa = PBXProject;
+   mainGroup = A00000000000000000000002;
+   productRefGroup = A00000000000000000000003;
+   buildConfigurationList = A00000000000000000000010;
+   preferredProjectObjectVersion = 77;
+   projectDirPath = "";
+   targets = (A00000000000000000000005);
+   developmentRegion = en;
+   knownRegions = (en, Base);
+  };
+  A00000000000000000000002 = { isa = PBXGroup; children = (A00000000000000000000004, A00000000000000000000003); sourceTree = "<group>"; };
+  A00000000000000000000003 = { isa = PBXGroup; children = (A00000000000000000000006); name = Products; sourceTree = "<group>"; };
+  A00000000000000000000004 = { isa = PBXFileSystemSynchronizedRootGroup; path = App; sourceTree = "<group>"; };
+  A00000000000000000000005 = {
+   isa = PBXNativeTarget;
+   name = Aedrova;
+   productName = Aedrova;
+   productReference = A00000000000000000000006;
+   productType = "com.apple.product-type.application";
+   buildConfigurationList = A00000000000000000000011;
+   buildPhases = (A00000000000000000000007, A00000000000000000000008);
+   fileSystemSynchronizedGroups = (A00000000000000000000004);
+  };
+  A00000000000000000000006 = { isa = PBXFileReference; explicitFileType = wrapper.application; path = Aedrova.app; sourceTree = BUILT_PRODUCTS_DIR; };
+  A00000000000000000000007 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+  A00000000000000000000008 = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+  A00000000000000000000010 = { isa = XCConfigurationList; buildConfigurations = (A00000000000000000000012, A00000000000000000000013); defaultConfigurationName = Release; };
+  A00000000000000000000011 = { isa = XCConfigurationList; buildConfigurations = (A00000000000000000000014, A00000000000000000000015); defaultConfigurationName = Release; };
+  A00000000000000000000012 = { isa = XCBuildConfiguration; name = Debug; buildSettings = { SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; }; };
+  A00000000000000000000013 = { isa = XCBuildConfiguration; name = Release; buildSettings = {}; };
+  A00000000000000000000014 = { isa = XCBuildConfiguration; name = Debug; baseConfigurationReference = A00000000000000000000016; buildSettings = {}; };
+  A00000000000000000000015 = { isa = XCBuildConfiguration; name = Release; baseConfigurationReference = A00000000000000000000016; buildSettings = {}; };
+  A00000000000000000000016 = { isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/App.xcconfig; sourceTree = SOURCE_ROOT; };
+ };
+ rootObject = A00000000000000000000001;
+}
