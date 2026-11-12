@@ -26,6 +26,8 @@ final class WorkspaceStore {
     var notice: String?
     var signingIn = false
     var isDemo = false
+    var demoMessages: [UUID: [ChatView.Row]] = [:]
+    var demoConversations = Demo.conversations
 
     func signIn(_ provider: String, using browser: WebAuthenticationSession) async {
         guard !signingIn else { return }
@@ -49,6 +51,8 @@ final class WorkspaceStore {
         notice = nil
         if isDemo {
             isDemo = false
+            demoMessages = [:]
+            demoConversations = Demo.conversations
             return
         }
         signingIn = true
@@ -184,75 +188,6 @@ private struct WorkspaceList: View {
         } catch let failure {
             workspaces = []
             people = []
-            error = message(for: failure)
-        }
-    }
-}
-
-private struct ConversationList: View {
-    let store: WorkspaceStore
-    let user: UUID
-    let workspace: Workspace
-    let people: [UUID: String]
-    @State private var conversations: [Conversation] = []
-    @State private var loaded = false
-    @State private var error: String?
-
-    var body: some View {
-        List {
-            section("Channels", direct: false)
-            section("Direct messages", direct: true)
-        }
-        .navigationTitle(workspace.name)
-        .overlay {
-            if conversations.isEmpty {
-                if let error {
-                    ContentUnavailableView {
-                        Label("Conversations unavailable", systemImage: "bubble.left.and.exclamationmark.bubble.right")
-                    } description: {
-                        Text(error)
-                    } actions: {
-                        Button("Try again") { Task { await load() } }
-                    }
-                } else if loaded {
-                    ContentUnavailableView("No conversations", systemImage: "bubble.left.and.bubble.right")
-                } else {
-                    ProgressView("Loading conversations")
-                }
-            }
-        }
-        .refreshable { await load() }
-        .task { await load() }
-    }
-
-    @ViewBuilder private func section(_ name: String, direct: Bool) -> some View {
-        let rows = conversations.filter { $0.isDirect == direct }
-        if !rows.isEmpty {
-            Section(name) {
-                ForEach(rows) { conversation in
-                    NavigationLink {
-                        ChatView(store: store, user: user, workspace: workspace,
-                                 conversation: conversation, people: people)
-                    } label: {
-                        Label(conversation.title(user: user, people: people),
-                              systemImage: direct ? "bubble.left" : "number")
-                    }
-                }
-            }
-        }
-    }
-
-    private func load() async {
-        do {
-            let rows = if store.isDemo { Demo.conversations }
-                else { try await store.api.conversations(workspace: workspace.id) }
-            try Task.checkCancellation()
-            conversations = rows
-            error = nil
-            loaded = true
-        } catch is CancellationError {
-        } catch let failure {
-            conversations = []
             error = message(for: failure)
         }
     }

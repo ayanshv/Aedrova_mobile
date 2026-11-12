@@ -1,8 +1,8 @@
 # Aedrova for iPhone
 
-A native SwiftUI companion for Aedrova workspaces. This first build connects to Aedrova Staging. It lists workspaces, channels and existing direct messages, shows recent messages and saved agent replies for the signed-in account, and sends text through the same server function as the desktop app. Open conversations refresh while the app is active.
+A native SwiftUI companion for Aedrova workspaces. The Debug build connects to Aedrova Staging. It supports workspace and channel browsing, new direct messages, thread replies, teammate mentions, message search, and in-app activity. Open conversations refresh while the app is active, and saved agent replies are visible to the signed-in account where permitted.
 
-Open `Aedrova.xcodeproj` in Xcode, select an iPhone simulator, and run the `Aedrova` scheme. The Debug build includes **Open local demo**, with sample channels, a DM and a composer. Demo messages stay in the current view and never reach staging.
+Open `Aedrova.xcodeproj` in Xcode, select an iPhone simulator, and run the `Aedrova` scheme. The Debug build includes **Open local demo**, with sample channels, a DM and a composer. Demo messages, threads, and direct conversations stay in memory until you sign out or relaunch.
 
 ```sh
 xcodebuild -project Aedrova.xcodeproj -scheme Aedrova -configuration Debug \
@@ -18,5 +18,5 @@ The target uses `com.aedrova.desktop` to match the existing App Store Connect re
 ## Before TestFlight
 
 - Verify live Google and Apple sign-in, two-way message sync, sending retries and workspace isolation with staging accounts.
-- Add new DM creation, mentions and notifications, agent and Bud follow-up controls, and thread support.
+- Verify mentions, thread replies, message search, and the activity feed in staging. Add push notifications and a hosted agent and Bud follow-up flow.
 - Configure production, sign an iOS build, and test it on real iPhones through TestFlight before App Review.

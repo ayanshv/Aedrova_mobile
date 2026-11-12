@@ -7,7 +7,7 @@ struct Workspace: Decodable, Identifiable {
     let name: String
 }
 
-struct Conversation: Decodable, Identifiable {
+struct Conversation: Decodable, Identifiable, Hashable {
     let id: UUID
     let name: String
     let kind: String
@@ -41,6 +41,27 @@ struct AgentReply: Decodable, Identifiable {
     let agentName: String
     let body: String
     let createdAt: String
+}
+
+struct ChatInventory: Decodable {
+    struct Entry: Decodable, Identifiable {
+        let id: UUID
+        let channelId: UUID
+        let parentId: UUID?
+        var sequence: Int64? = nil
+        let body: String
+        let notification: String?
+        let seenAt: String?
+    }
+
+    struct Member: Decodable, Identifiable {
+        let userId: UUID
+        let displayName: String
+        var id: UUID { userId }
+    }
+
+    let messages: [Entry]
+    let people: [Member]
 }
 
 enum WorkspaceError: Error {
@@ -167,16 +188,37 @@ actor WorkspaceAPI {
         ])
     }
 
-    func messages(conversation: UUID) async throws -> [Message] {
-        try await rpc("message_page", body: ["p_channel": conversation.uuidString, "p_limit": 60])
+    func startDM(workspace: UUID, recipient: UUID) async throws -> UUID {
+        try await rpc("start_direct_message", body: [
+            "p_workspace": workspace.uuidString, "p_user": recipient.uuidString
+        ])
     }
 
-    func replies(workspace: UUID, conversation: UUID) async throws -> [AgentReply] {
+    func inventory(workspace: UUID, section: String, query: String = "", channel: UUID? = nil) async throws -> ChatInventory {
+        var body = ["p_workspace": workspace.uuidString, "p_section": section, "p_query": query]
+        body["p_channel"] = channel?.uuidString
+        return try await rpc("chat_inventory", body: body)
+    }
+
+    func markSeen(_ entry: ChatInventory.Entry) async throws {
+        let _: [String: String] = try await rpc("chat_action", body: [
+            "p_action": "seen", "p_data": ["channel": entry.channelId.uuidString, "message": entry.id.uuidString]
+        ])
+    }
+
+    func messages(conversation: UUID, parent: UUID?, before: Int64? = nil) async throws -> [Message] {
+        var body: [String: Any] = ["p_channel": conversation.uuidString, "p_limit": 60]
+        body["p_parent"] = parent?.uuidString
+        body["p_before"] = before
+        return try await rpc("message_page", body: body)
+    }
+
+    func replies(workspace: UUID, conversation: UUID, parent: UUID?) async throws -> [AgentReply] {
         do {
             return try await read("my_agent_replies", query: [
                 .init(name: "workspace_id", value: "eq.\(workspace.uuidString)"),
                 .init(name: "channel_id", value: "eq.\(conversation.uuidString)"),
-                .init(name: "parent_id", value: "is.null"),
+                .init(name: "parent_id", value: parent.map { "eq.\($0.uuidString)" } ?? "is.null"),
                 .init(name: "select", value: "id,agent_name,body,created_at"),
                 .init(name: "order", value: "created_at.desc,id.asc"),
                 .init(name: "limit", value: "60")
@@ -186,10 +228,10 @@ actor WorkspaceAPI {
         }
     }
 
-    func send(id: UUID, conversation: UUID, body: String) async throws {
-        let _: UUID = try await rpc("send_message", body: [
-            "p_id": id.uuidString, "p_channel": conversation.uuidString, "p_body": body
-        ])
+    func send(id: UUID, conversation: UUID, body: String, parent: UUID?) async throws {
+        var parameters = ["p_id": id.uuidString, "p_channel": conversation.uuidString, "p_body": body]
+        parameters["p_parent"] = parent?.uuidString
+        let _: UUID = try await rpc("send_message", body: parameters)
     }
 
     private func rpc<T: Decodable>(_ name: String, body: [String: Any]) async throws -> T {
